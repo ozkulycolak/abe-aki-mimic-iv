@@ -1,5 +1,7 @@
 # Early trajectory of alactic base excess and acute kidney injury (MIMIC-IV)
 
+[![DOI](https://zenodo.org/badge/1407257460.svg)](https://doi.org/10.5281/zenodo.23188220)
+
 Code for the study:
 
 > Kılıç Ö, Yılmaz Çolak Ö. *Early trajectory of alactic base excess and acute kidney injury in critically ill adults: a retrospective cohort study using the MIMIC-IV database.* (manuscript submitted)
@@ -21,8 +23,11 @@ The analysis uses [MIMIC-IV v3.1](https://doi.org/10.13026/kpb9-mt58), which is 
    - `sql/01_cohort.sql` (creates `abe.kohort`; expected n = 6,173, events = 629)
    - `sql/02_covariates.sql` (creates `abe.kovaryat`)
    - `sql/04_flowchart_counts.sql` (counts for Figure 1; last column = 6,173)
+   - `sql/05_sofa_day1.sql` (non-renal SOFA, creates `abe.sofa_d1`)
+   - `sql/06_selection_comparison.sql` (included vs excluded patients, Supplementary Table S4)
 5. Open Google Colaboratory, upload or clone this repository, set `PROJECT_ID` in `analysis/abe_aki_analysis.py` and run it. It reads `sql/03_additional_covariates.sql` directly and prints all results reported in the manuscript; Figures 2 and 3 are written to `figures/`.
-6. `analysis/figure1_flowchart.py` draws Figure 1 from the aggregate counts.
+6. In the same session, run `analysis/additional_sensitivity.py` (non-renal SOFA, early creatinine change, chloride, number of blood gases, secondary outcome).
+7. `analysis/figure1_flowchart.py` draws Figure 1 from the aggregate counts.
 
 Multiple imputation uses fixed random seeds (0 to 19), so results should be reproducible to the reported precision.
 
@@ -34,8 +39,11 @@ sql/
   02_covariates.sql              covariates
   03_additional_covariates.sql   sodium bicarbonate, blood products, acetazolamide
   04_flowchart_counts.sql        flow chart counts
+  05_sofa_day1.sql               non-renal SOFA score, first 24 h
+  06_selection_comparison.sql    included vs excluded patients
 analysis/
   abe_aki_analysis.py            descriptive statistics, models, figures 2-3
+  additional_sensitivity.py      additional sensitivity analyses
   figure1_flowchart.py           figure 1
 figures/                         output folder
 ```

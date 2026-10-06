@@ -1,12 +1,11 @@
-# Exact versions are printed at the end of analysis/abe_aki_analysis.py;
-# pin them here after the final run.
-pandas
-numpy
-statsmodels
-scikit-learn
-patsy
-scipy
-tableone
-matplotlib
-google-cloud-bigquery
+# Versions used for the published analysis (Python 3.13, Google Colaboratory)
+pandas==2.2.3
+numpy==2.1.3
+statsmodels==0.15.0
+scikit-learn==1.6.1
+patsy==1.0.3
+scipy==1.16.3
+tableone==0.9.6
+matplotlib==3.10.0
+google-cloud-bigquery==3.45.2
 db-dtypes
