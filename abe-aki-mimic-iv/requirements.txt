@@ -1,0 +1,12 @@
+# Exact versions are printed at the end of analysis/abe_aki_analysis.py;
+# pin them here after the final run.
+pandas
+numpy
+statsmodels
+scikit-learn
+patsy
+scipy
+tableone
+matplotlib
+google-cloud-bigquery
+db-dtypes

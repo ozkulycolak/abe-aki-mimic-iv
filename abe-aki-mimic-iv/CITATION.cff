@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+title: "Early trajectory of alactic base excess and acute kidney injury in critically ill adults (MIMIC-IV): analysis code"
+version: 1.0.0
+date-released: 2026-10-06
+license: MIT
+authors:
+  - family-names: "Kılıç"
+    given-names: "Özgür"
+    orcid: "https://orcid.org/0000-0001-7194-8569"
+    affiliation: "Ondokuz Mayıs University, Faculty of Medicine, Department of Internal Medicine, Division of Intensive Care"
+  - family-names: "Yılmaz Çolak"
+    given-names: "Özkul"
+    orcid: "https://orcid.org/0000-0003-2846-6358"
+    affiliation: "Ondokuz Mayıs University, Faculty of Medicine, Department of Internal Medicine, Division of Intensive Care"
