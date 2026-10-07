@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite it as below."
-title: "Early trajectory of alactic base excess and acute kidney injury in critically ill adults (MIMIC-IV): analysis code"
-version: 1.0.1
+title: "Early changes in alactic base excess and subsequent acute kidney injury in critically ill adults (MIMIC-IV): analysis code"
+version: 2.2.0
 date-released: 2026-10-06
 doi: 10.5281/zenodo.23188220
 license: MIT

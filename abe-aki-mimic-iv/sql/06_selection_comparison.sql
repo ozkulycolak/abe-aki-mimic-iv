@@ -1,6 +1,7 @@
 -- =====================================================================
 -- 06_selection_comparison.sql
--- Included patients vs eligible patients excluded (Supplementary Table S4).
+-- Patients assessed during cohort construction (Supplementary Table S4).
+-- Returns one row per ICU stay; summarised (medians, SMDs) in Python.
 -- Replace YOUR_PROJECT_ID with your own Google Cloud project ID.
 -- =====================================================================
 WITH esrd AS (
@@ -58,18 +59,5 @@ gruplu AS (
   JOIN abe a ON u.stay_id = a.stay_id
   WHERE a.n_0_24 >= 1
 )
-SELECT
-  grup,
-  COUNT(*) AS n,
-  APPROX_QUANTILES(yas, 4) AS age_quartiles,
-  ROUND(AVG(IF(gender = 'M', 1, 0)) * 100, 1) AS male_pct,
-  ROUND(AVG(IF(first_careunit LIKE '%CVICU%', 1, 0)) * 100, 1) AS cvicu_pct,
-  ROUND(AVG(IF(first_careunit LIKE 'Medical Intensive%', 1, 0)) * 100, 1) AS micu_pct,
-  ROUND(AVG(IF(first_careunit LIKE '%TSICU%', 1, 0)) * 100, 1) AS tsicu_pct,
-  APPROX_QUANTILES(abe_d1, 4) AS abe_day1_quartiles,
-  APPROX_QUANTILES(laktat_d1, 4) AS lactate_day1_quartiles,
-  APPROX_QUANTILES(los, 4) AS icu_los_days_quartiles,
-  ROUND(AVG(hospital_expire_flag) * 100, 1) AS hospital_mortality_pct
-FROM gruplu
-GROUP BY grup
-ORDER BY grup;
+SELECT grup, stay_id, yas, gender, first_careunit, abe_d1, laktat_d1, los, hospital_expire_flag
+FROM gruplu;

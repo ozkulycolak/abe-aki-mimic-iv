@@ -1,7 +1,10 @@
 -- =====================================================================
--- 04_flowchart_counts.sql
+-- 04_flowchart_counts.sql  (version 2.1)
+-- Steps a0-a7 are computed here; the final step (no KDIGO stage 2-3 AKI
+-- within 48 h, rolling KDIGO references) is read from abe.kohort, which
+-- requires sql/01_cohort.sql to have been run first.
 -- Sequential exclusion counts for the study flow chart (Figure 1).
--- The last column must equal the number of rows in abe.kohort (6,173).
+-- The last column must equal the number of rows in abe.kohort.
 -- =====================================================================
 WITH esrd AS (
   SELECT DISTINCT hadm_id
@@ -67,7 +70,9 @@ f AS (
     IFNULL(a.n_24_48, 0) >= 1 AS s5,
     k.kre_ilk IS NOT NULL AS s6,
     (r.rrt_ilk IS NULL OR r.rrt_ilk > DATETIME_ADD(c.intime, INTERVAL 48 HOUR)) AS s7,
-    IFNULL(k.kre_max_0_48 < 2 * COALESCE(k.kre_onceki_min, k.kre_ilk), FALSE) AS s8
+    IFNULL(NOT (k.kre_max_0_48 >= 2 * COALESCE(k.kre_onceki_min, k.kre_ilk)
+                OR (k.kre_max_0_48 >= 4.0
+                    AND k.kre_max_0_48 >= COALESCE(k.kre_onceki_min, k.kre_ilk) + 0.3)), FALSE) AS s8
   FROM icu c
   LEFT JOIN esrd e ON c.hadm_id = e.hadm_id
   LEFT JOIN abe a ON c.stay_id = a.stay_id
@@ -83,5 +88,6 @@ SELECT
   COUNTIF(s1 AND s2 AND s3 AND s4 AND s5) AS a5_paired_be_lactate_24_48h,
   COUNTIF(s1 AND s2 AND s3 AND s4 AND s5 AND s6) AS a6_creatinine_available,
   COUNTIF(s1 AND s2 AND s3 AND s4 AND s5 AND s6 AND s7) AS a7_no_early_krt,
-  COUNTIF(s1 AND s2 AND s3 AND s4 AND s5 AND s6 AND s7 AND s8) AS a8_no_early_aki_final
+  (SELECT COUNT(*) FROM `YOUR_PROJECT_ID.abe.kohort_genis`) AS a7_check_kohort_genis,
+  (SELECT COUNT(*) FROM `YOUR_PROJECT_ID.abe.kohort`) AS a8_no_early_aki_final
 FROM f;

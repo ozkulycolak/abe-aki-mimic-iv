@@ -1,5 +1,5 @@
-# Figure 1: study flow chart. Counts are taken from sql/04_flowchart_counts.sql.
-# Contains aggregate counts only (no patient-level data).
+# Figure 1: flow chart of patient selection (counts from sql/04_flowchart_counts.sql)
+# Run from the repository root: python analysis/figure1_flowchart.py
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -53,7 +53,7 @@ hb['b0'] = main(XM, ys['b0'], MW, ['ICU stays in MIMIC-IV v3.1', '(n = 94,458)']
 hb['b1'] = main(XM, ys['b1'], MW, ['First ICU stay of adult patients', '(n = 65,366)'])
 hb['b2'] = main(XM, ys['b2'], MW, ['Eligible ICU stays', '(n = 29,915)'])
 hb['b3'] = main(XM, ys['b3'], MW, ['Serial acid-base data available', '(n = 7,699)'])
-hb['b4'] = main(XM, ys['b4'], MW, ['Study cohort', '(n = 6,173)'], fc='#e6eef8', bold_first=True)
+hb['b4'] = main(XM, ys['b4'], MW, ['Study cohort', '(n = 5,958)'], fc='#e6eef8', bold_first=True)
 
 order = ['b0','b1','b2','b3','b4']
 for a, b in zip(order[:-1], order[1:]):
@@ -65,11 +65,11 @@ ex = [
         ['ICU length of stay < 48 h (n = 34,224)', 'Died within 48 h (n = 148)',
          'ESKD or chronic dialysis (n = 1,079)']),
     ((ys['b2']+ys['b3'])/2, 'Excluded (n = 22,216)',
-        ['No paired BE and lactate, 0-24 h (n = 11,487)',
-         'No paired BE and lactate, 24-48 h (n = 10,729)']),
-    ((ys['b3']+ys['b4'])/2, 'Excluded (n = 1,526)',
+        ['No paired BE and lactate on day 1 (n = 11,487)',
+         'No paired BE and lactate on day 2 (n = 10,729)']),
+    ((ys['b3']+ys['b4'])/2, 'Excluded (n = 1,741)',
         ['No creatinine at ICU admission (n = 202)', 'KRT started within 48 h (n = 432)',
-         'KDIGO stage 2-3 AKI within 48 h (n = 892)']),
+         'KDIGO stage 2-3 AKI within 48 h (n = 1,107)']),
 ]
 for cy, hd, bl in ex:
     excl(XE, cy, EW, hd, bl)
@@ -85,10 +85,9 @@ ax.plot([xl, xr], [ysplit, ysplit], color='black', lw=LW)
 ho = LH*3 + 0.36
 for x in (xl, xr):
     arrow(x, ysplit, x, yo+ho/2)
-main(xl, yo, OW, ['KDIGO stage 2-3 AKI or KRT', '(48 h to day 7)', 'n = 629 (10.2%)'])
-main(xr, yo, OW, ['No primary outcome', '(48 h to day 7)', 'n = 5,544 (89.8%)'])
+main(xl, yo, OW, ['KDIGO stage 2-3 AKI or KRT', '(48 h to day 7)', 'n = 598 (10.0%)'])
+main(xr, yo, OW, ['No primary outcome', '(48 h to day 7)', 'n = 5,360 (90.0%)'])
 
 for ext, kw in [('png', dict(dpi=600)), ('pdf', {}), ('svg', {}), ('tiff', dict(dpi=600, pil_kwargs={'compression':'tiff_lzw'}))]:
-    fig.savefig(f'../figures/Figure1_flowchart.{ext}', facecolor='white', **kw)
-
+    fig.savefig(f'figures/Figure1_flowchart.{ext}', facecolor='white', **kw)
 print(fam)

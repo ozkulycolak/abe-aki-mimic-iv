@@ -1,12 +1,12 @@
-# Early trajectory of alactic base excess and acute kidney injury (MIMIC-IV)
+# Early changes in alactic base excess and subsequent acute kidney injury (MIMIC-IV)
 
 [![DOI](https://zenodo.org/badge/1407257460.svg)](https://doi.org/10.5281/zenodo.23188220)
 
 Code for the study:
 
-> Kılıç Ö, Yılmaz Çolak Ö. *Early trajectory of alactic base excess and acute kidney injury in critically ill adults: a retrospective cohort study using the MIMIC-IV database.* (manuscript submitted)
+> Kılıç Ö, Yılmaz Çolak Ö. *Early changes in alactic base excess and subsequent acute kidney injury in critically ill adults: a retrospective cohort study using MIMIC-IV.* (manuscript in preparation)
 
-The study examines whether the change in alactic base excess (ABE = base excess + lactate) between the first and second 24 h after ICU admission (ΔABE) is associated with KDIGO stage 2-3 acute kidney injury or kidney replacement therapy between 48 h and day 7.
+The study examines whether the change in alactic base excess (ABE = base excess + lactate) between day 1 (6 h before to 24 h after ICU admission) and day 2 (24 to 48 h) (ΔABE) is associated with KDIGO stage 2-3 acute kidney injury (creatinine criteria with rolling 48-h and 7-day reference values, as in the MIMIC Code Repository) or kidney replacement therapy between 48 h and day 7.
 
 **This repository contains code only. It does not contain any patient-level data.**
 
@@ -18,18 +18,22 @@ The analysis uses [MIMIC-IV v3.1](https://doi.org/10.13026/kpb9-mt58), which is 
 
 1. Obtain credentialed access to MIMIC-IV on PhysioNet and request BigQuery access.
 2. Create your own Google Cloud project (the free BigQuery sandbox is sufficient).
-3. In every file under `sql/`, replace `YOUR_PROJECT_ID` with your project ID.
-4. In the BigQuery console, run, in this order:
-   - `sql/01_cohort.sql` (creates `abe.kohort`; expected n = 6,173, events = 629)
+3. In the BigQuery console, replace `YOUR_PROJECT_ID` with your project ID and run, in this order:
+   - `sql/01_cohort.sql` (creates `abe.kohort_genis` and `abe.kohort`)
    - `sql/02_covariates.sql` (creates `abe.kovaryat`)
-   - `sql/04_flowchart_counts.sql` (counts for Figure 1; last column = 6,173)
-   - `sql/05_sofa_day1.sql` (non-renal SOFA, creates `abe.sofa_d1`)
-   - `sql/06_selection_comparison.sql` (included vs excluded patients, Supplementary Table S4)
-5. Open Google Colaboratory, upload or clone this repository, set `PROJECT_ID` in `analysis/abe_aki_analysis.py` and run it. It reads `sql/03_additional_covariates.sql` directly and prints all results reported in the manuscript; Figures 2 and 3 are written to `figures/`.
-6. In the same session, run `analysis/additional_sensitivity.py` (non-renal SOFA, early creatinine change, chloride, number of blood gases, secondary outcome).
-7. `analysis/figure1_flowchart.py` draws Figure 1 from the aggregate counts.
+   - `sql/05_sofa_day1.sql` (creates `abe.sofa_d1`)
+   - `sql/04_flowchart_counts.sql` (counts for Figure 1; the last column equals the number of rows in `abe.kohort`)
+   - optional: `sql/08_itemid_check.sql` (labels of the itemids used)
+4. In Google Colaboratory, upload or clone this repository and run:
+   ```
+   !pip install -q tableone lifelines
+   import os; os.environ['ABE_PROJECT_ID'] = 'your-project-id'
+   %run analysis/abe_aki_analysis.py
+   ```
+   The script reads `sql/03`, `sql/06`, `sql/07` and `sql/09` directly, prints all results reported in the manuscript, writes them to `results_v2_2.txt` (aggregate results only) and saves Figures 2 and 3 to `figures/`. With 40 imputations and 200 bootstrap replicates it takes about 20-30 minutes.
+5. `analysis/figure1_flowchart.py` draws Figure 1 from the aggregate counts.
 
-Multiple imputation uses fixed random seeds (0 to 19), so results should be reproducible to the reported precision.
+Multiple imputation and bootstrap use fixed random seeds, so results are reproducible to the reported precision.
 
 ## Repository structure
 
@@ -40,10 +44,12 @@ sql/
   03_additional_covariates.sql   sodium bicarbonate, blood products, acetazolamide
   04_flowchart_counts.sql        flow chart counts
   05_sofa_day1.sql               non-renal SOFA score, first 24 h
-  06_selection_comparison.sql    included vs excluded patients
+  06_selection_comparison.sql    patients assessed during cohort construction
+  07_extra_covariates.sql        cardiac surgery service, crystalloid type
+  08_itemid_check.sql            labels of itemids used
+  09_kdigo_reconciliation.sql    comparison of KDIGO definitions (rolling vs fixed baseline)
 analysis/
-  abe_aki_analysis.py            descriptive statistics, models, figures 2-3
-  additional_sensitivity.py      additional sensitivity analyses
+  abe_aki_analysis.py            all analyses and figures 2-3
   figure1_flowchart.py           figure 1
 figures/                         output folder
 ```
@@ -54,16 +60,26 @@ figures/                         output folder
 |---|---|
 | kohort / kovaryat | cohort / covariates |
 | yas, cinsiyet, kabul_tipi, yb_tipi | age, sex, admission type, ICU type |
-| abe_ort_0_24, abe_ort_24_48 | mean ABE, 0-24 h and 24-48 h |
-| abe_min_0_24, abe_min_24_48 | lowest ABE, 0-24 h and 24-48 h |
+| abe_ort_0_24, abe_ort_24_48 | mean ABE on day 1 (−6 to 24 h) and day 2 (> 24 to 48 h) |
+| abe_ort_0_24_siki, delta_siki | mean ABE in the strict 0-24 h window and corresponding ΔABE |
+| abe_ilk_g1, abe_son_g2 | first ABE on day 1, last ABE on day 2 |
+| be_ort_24_48, laktat_ort_24_48 | mean base excess and lactate on day 2 |
+| klor_g1, klor_g2, sodyum_g1, sodyum_g2 | mean chloride and sodium on day 1 and day 2 |
+| abe_min_0_24, abe_min_24_48 | lowest ABE on day 1 and day 2 |
 | delta_abe | ΔABE = abe_ort_24_48 − abe_ort_0_24 |
 | laktat_ort_0_24, be_ort_0_24 | mean lactate and base excess, 0-24 h |
 | n_arteriyel, n_venoz | number of arterial / venous specimens |
 | kre_bazal, kre_ilk, bazal_kaynak | baseline creatinine, admission creatinine, source of baseline |
-| kre_onceki_min | lowest creatinine in the 7 days before ICU admission |
+| kre_onceki_min | lowest creatinine in the 7 days before ICU admission (primary baseline) |
+| kre_son_onceki, kre_uzak_medyan | last pre-ICU creatinine; median creatinine 8-365 days before ICU (alternative baselines) |
+| aki_zaman, krt_sonlanim, kre_sonlanim | time of the primary outcome; KRT component; creatinine component |
+| sonlanim_evre3, sonlanim_sabit | KDIGO stage 3 or KRT; version-2 outcome with a fixed baseline (comparison only) |
+| evre1_48s_kdigo, dis_kdigo | KDIGO stage 1 by 48 h; KDIGO stage 2-3 within 48 h (exclusion), rolling references |
+| kre_oran_48 | highest creatinine 0-48 h / baseline |
+| kalp_cerrahisi, salin_ml, dengeli_ml | cardiac surgery service; 0.9% saline and balanced crystalloid volumes 0-48 h |
 | kre_max_0_48, kre_max_48s_7g | highest creatinine, −12 to 48 h and 48 h to day 7 |
 | rrt_ilk | first kidney replacement therapy start time |
-| sonlanim_aki23_rrt | primary outcome (KDIGO stage 2-3 AKI or KRT, 48 h to day 7) |
+| sonlanim_aki23_rrt | primary outcome (KDIGO stage 2-3 AKI by creatinine or KRT, 48 h to day 7) |
 | vazopressor_48s, imv_48s | vasopressors, invasive mechanical ventilation within 48 h |
 | sivi_dengesi_48s, idrar_ml_kg_saat | fluid balance (mL), urine output (mL/kg/h), 0-48 h |
 | map_min_24s, kilo | lowest mean arterial pressure 0-24 h, body weight |
