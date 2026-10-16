@@ -1,10 +1,10 @@
-# Early changes in alactic base excess and subsequent acute kidney injury (MIMIC-IV)
+# Early changes in alactic base excess and subsequent acute kidney injury (MIMIC-IV and eICU-CRD)
 
 [![DOI](https://zenodo.org/badge/1407257460.svg)](https://doi.org/10.5281/zenodo.23188220)
 
 Code for the study:
 
-> Kılıç Ö, Yılmaz Çolak Ö. *Early changes in alactic base excess and subsequent acute kidney injury in critically ill adults: a retrospective cohort study using MIMIC-IV.* (manuscript in preparation)
+> Kılıç Ö, Yılmaz Çolak Ö. *Early changes in alactic base excess and subsequent acute kidney injury in critically ill adults: a retrospective cohort study in MIMIC-IV with external validation in the eICU Collaborative Research Database.* (manuscript in preparation)
 
 The study examines whether the change in alactic base excess (ABE = base excess + lactate) between day 1 (6 h before to 24 h after ICU admission) and day 2 (24 to 48 h) (ΔABE) is associated with KDIGO stage 2-3 acute kidney injury (creatinine criteria with rolling 48-h and 7-day reference values, as in the MIMIC Code Repository) or kidney replacement therapy between 48 h and day 7.
 
@@ -52,7 +52,38 @@ analysis/
   abe_aki_analysis.py            all analyses and figures 2-3
   figure1_flowchart.py           figure 1
 figures/                         output folder
+eicu/
+  eicu_external_validation.ipynb eICU-CRD external validation (version 3.0)
+analysis/
+  mimic_harmonised_sbe.ipynb     MIMIC-IV with the eICU-CRD exposure definition (version 3.0)
 ```
+
+## Version 3.0: external validation in eICU-CRD
+
+Version 3.0 adds an external validation of the main analysis in the
+[eICU Collaborative Research Database v2.0](https://doi.org/10.13026/C2WM1R)
+and a harmonised exposure definition in MIMIC-IV. Both require credentialed
+access on PhysioNet and BigQuery access; only aggregate results are printed.
+
+| File | Purpose |
+|---|---|
+| `eicu/eicu_external_validation.ipynb` | eICU-CRD cohort, exposure (standard base excess calculated from pH and HCO3 with the Van Slyke equation; daily mean SBE + daily mean lactate), KDIGO outcome with rolling references, covariates, multiple imputation (40 datasets), logistic regression with standard errors clustered by hospital, secondary and sensitivity analyses |
+| `analysis/mimic_harmonised_sbe.ipynb` | Runs sections 1-3 of `analysis/abe_aki_analysis.py`, recalculates ΔABE in MIMIC-IV with the eICU-CRD definition (HCO3 from pH and pCO2 by Henderson-Hasselbalch), refits the primary models and pools MIMIC-IV and eICU-CRD estimates (inverse-variance) |
+
+Set `PROJECT_ID` (eICU notebook) or `ABE_PROJECT_ID` (MIMIC notebook) to your
+Google Cloud project before running. The MIMIC notebook requires the tables
+created by `sql/01_cohort.sql`, `sql/02_covariates.sql` and `sql/05_sofa_day1.sql`.
+
+### Glossary additions (eICU notebook)
+
+| Variable | Meaning |
+|---|---|
+| sbe1, sbe2 | daily mean calculated standard base excess, day 1 and day 2 |
+| lac1, lac2 | daily mean lactate, day 1 and day 2 |
+| abe1, abe2, dabe | ABE on day 1 and day 2 and ΔABE (primary eICU definition) |
+| dabe_p60 | ΔABE from SBE-lactate pairs within 60 min (sensitivity) |
+| outcome, outcome_s3 | KDIGO stage 2-3 AKI or KRT; KDIGO stage 3 AKI or KRT (48 h to day 7) |
+| stage1_48 | KDIGO stage 1 AKI criteria met from −12 h to 48 h |
 
 ## Glossary of variable names (Turkish → English)
 
